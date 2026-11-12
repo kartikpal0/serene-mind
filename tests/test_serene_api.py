@@ -245,3 +245,26 @@ def test_mood_scan_journal_midnight_reset_and_8pm_reminder(client: TestClient) -
     assert body["summary"]["total_scans"] >= 14
     assert len(body["timeline"]) == 14
     assert len(body["heatmap"]) == 90
+
+
+def test_owner_admin_stats_privacy_and_auth(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Disabled when ADMIN_STATS_KEY is unset
+    assert client.get("/api/admin/stats").status_code == 503
+
+    monkeypatch.setenv("ADMIN_STATS_KEY", "owner-secret-key-123")
+    assert client.get("/api/admin/stats").status_code == 401
+    assert client.get("/api/admin/stats", headers={"X-Admin-Key": "wrong"}).status_code == 401
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    client.post("/api/auth/guest", json={"local_date": today})
+
+    stats_resp = client.get("/api/admin/stats", headers={"X-Admin-Key": "owner-secret-key-123"})
+    assert stats_resp.status_code == 200
+    stats = stats_resp.json()
+    assert stats["users"]["guest_accounts"] == 1
+    assert stats["sessions"]["active_unique_users"] == 1
+    assert stats["sessions"]["active_by_method"]["guest"] == 1
+    assert "email" not in str(stats).lower()
+    assert "guest-" not in str(stats).lower()

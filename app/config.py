@@ -75,4 +75,5 @@ def get_settings() -> dict[str, object]:
         "smtp_use_tls": os.getenv("SMTP_USE_TLS", "true").lower() in {"1", "true", "yes"},
         "google_client_id": os.getenv("GOOGLE_CLIENT_ID", "").strip(),
         "github_client_id": os.getenv("GITHUB_CLIENT_ID", "").strip(),
+        "admin_stats_key": _clean_secret(os.getenv("ADMIN_STATS_KEY", "")),
     }
