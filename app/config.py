@@ -28,11 +28,15 @@ def load_dotenv_file() -> None:
 load_dotenv_file()
 
 
+def _clean_secret(val: str) -> str:
+    return val.strip().strip('"').strip("'").strip()
+
+
 def get_settings() -> dict[str, object]:
     """Return runtime configuration settings."""
-    resend_key = os.getenv("RESEND_API_KEY", "").strip()
-    brevo_key = os.getenv("BREVO_API_KEY", "").strip()
-    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    resend_key = _clean_secret(os.getenv("RESEND_API_KEY", ""))
+    brevo_key = _clean_secret(os.getenv("BREVO_API_KEY", ""))
+    smtp_host = _clean_secret(os.getenv("SMTP_HOST", ""))
     mail_configured = bool(resend_key or brevo_key or smtp_host)
 
     is_cloud_prod = bool(

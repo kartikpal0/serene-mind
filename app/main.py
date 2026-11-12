@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.config import STATIC_DIR
@@ -52,6 +52,12 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 def service_worker() -> FileResponse:
     """Serve service worker from root scope for 8 PM local reminders."""
     return FileResponse(STATIC_DIR / "sw.js", media_type="application/javascript")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    """Return empty 204 for favicon requests to keep server logs clean."""
+    return Response(status_code=204)
 
 
 @app.get("/health")

@@ -410,8 +410,8 @@ export class JournalManager {
   }
 
   startMidnightAndReminderWatchers() {
+    this.stopWatchers();
     this.scheduleMidnightReset();
-    clearInterval(this.reminderInterval);
     this.checkReminder(false);
     this.reminderInterval = setInterval(() => {
       if (getLocalDateStr() !== this.activeDate) {
@@ -420,11 +420,21 @@ export class JournalManager {
       this.checkReminder(false);
     }, 60 * 1000);
 
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && getLocalDateStr() !== this.activeDate) {
-        this.handleMidnightRollover();
-      }
-    });
+    if (!this._visHandler) {
+      this._visHandler = () => {
+        if (!document.hidden && this.reminderInterval && getLocalDateStr() !== this.activeDate) {
+          this.handleMidnightRollover();
+        }
+      };
+      document.addEventListener("visibilitychange", this._visHandler);
+    }
+  }
+
+  stopWatchers() {
+    clearTimeout(this.midnightTimer);
+    clearInterval(this.reminderInterval);
+    this.midnightTimer = null;
+    this.reminderInterval = null;
   }
 
   scheduleMidnightReset() {

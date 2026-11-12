@@ -916,6 +916,7 @@ function wireEvents() {
     try {
       await apiRequest("/api/profile", { method: "DELETE" });
       soundEngine.stopAll();
+      if (journal) journal.stopWatchers();
       state.user = null;
       document.getElementById("profile-modal").classList.add("hidden");
       document.getElementById("app-view").classList.add("hidden");
@@ -929,6 +930,7 @@ function wireEvents() {
   document.getElementById("btn-logout").addEventListener("click", async () => {
     await apiRequest("/api/auth/logout", { method: "POST" });
     soundEngine.stopAll();
+    if (journal) journal.stopWatchers();
     if (scanner && scanner.running) {
       scanner.stopCamera(
         document.getElementById("webcam-video"),

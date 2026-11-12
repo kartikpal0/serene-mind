@@ -16,7 +16,24 @@ from app.config import get_settings
 from app.security import utc_now_iso
 
 
+def _extract_http_error(exc: urllib.error.HTTPError) -> str:
+    try:
+        raw = exc.read().decode("utf-8", errors="ignore").strip()
+    except Exception:
+        raw = ""
+    if raw:
+        try:
+            parsed = json.loads(raw)
+            msg = parsed.get("message") or parsed.get("error") or raw
+            return f"HTTP {exc.code}: {msg}"
+        except Exception:
+            return f"HTTP {exc.code}: {raw[:180]}"
+    return f"HTTP {exc.code}: {exc.reason}"
+
+
 def _send_via_resend(api_key: str, sender: str, recipient: str, subject: str, body_text: str) -> None:
+    if api_key.startswith("xkeysib-") or api_key.startswith("xsmtpsib-"):
+        raise RuntimeError("This looks like a Brevo key placed in RESEND_API_KEY. Use BREVO_API_KEY instead.")
     payload = json.dumps(
         {
             "from": sender,
@@ -35,12 +52,21 @@ def _send_via_resend(api_key: str, sender: str, recipient: str, subject: str, bo
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=12) as resp:
-        if resp.status >= 300:
-            raise RuntimeError(f"Resend returned HTTP {resp.status}")
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            if resp.status >= 300:
+                raise RuntimeError(f"Resend returned HTTP {resp.status}")
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(_extract_http_error(exc)) from exc
 
 
 def _send_via_brevo(api_key: str, sender: str, recipient: str, subject: str, body_text: str) -> None:
+    if api_key.startswith("xsmtpsib-"):
+        raise RuntimeError(
+            "You pasted a Brevo SMTP key (xsmtpsib-...). For BREVO_API_KEY, generate an API v3 key (starts with xkeysib-...) under Brevo -> SMTP & API -> API Keys."
+        )
+    if api_key.startswith("re_"):
+        raise RuntimeError("This looks like a Resend key placed in BREVO_API_KEY. Use RESEND_API_KEY instead.")
     sender_email = sender
     sender_name = "Serene Wellness"
     if "<" in sender and ">" in sender:
@@ -66,9 +92,12 @@ def _send_via_brevo(api_key: str, sender: str, recipient: str, subject: str, bod
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=12) as resp:
-        if resp.status >= 300:
-            raise RuntimeError(f"Brevo returned HTTP {resp.status}")
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            if resp.status >= 300:
+                raise RuntimeError(f"Brevo returned HTTP {resp.status}")
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(_extract_http_error(exc)) from exc
 
 
 def _send_via_smtp(settings: dict[str, object], recipient: str, subject: str, body_text: str) -> None:
