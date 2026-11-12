@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Serene — Quiet Mental Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <script src="/static/vendor/face-api.js" defer></script>
+  <script src="/static/vendor/chart.umd.min.js" defer></script>
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <div class="ambient-canvas" aria-hidden="true">
+    <div class="ambient-blob one"></div>
+    <div class="ambient-blob two"></div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <!-- AUTHENTICATION VIEW -->
+  <main id="auth-view" class="auth-shell">
+    <div class="auth-container">
+      <section class="auth-hero">
+        <div class="brand-mark">
+          <span class="brand-dot"></span>
+          <span>Serene</span>
+        </div>
+        <h1>A quiet space to check in, reflect, and breathe.</h1>
+        <p>
+          Sense your real-time emotional state privately on your own device, keep a multimedia daily journal that refreshes at midnight, and watch your wellbeing unfold gently over time.
+        </p>
+        <div class="auth-highlights">
+          <div class="auth-highlight-item"><span>○</span><span>On-device camera mood sensing — zero video leaves your browser</span></div>
+          <div class="auth-highlight-item"><span>○</span><span>Daily journal with text, photos &amp; voice notes + 8 PM gentle check-in</span></div>
+          <div class="auth-highlight-item"><span>○</span><span>Tailored breathing, ambient soundscapes &amp; wellness trends</span></div>
+        </div>
+      </section>
+
+      <section class="card" style="padding: 28px;">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" data-auth-tab="login">Sign In</button>
+          <button type="button" class="auth-tab" data-auth-tab="register">Create</button>
+          <button type="button" class="auth-tab" data-auth-tab="otp">Email Code</button>
+          <button type="button" class="auth-tab" data-auth-tab="pin">Quick PIN</button>
+        </div>
+
+        <!-- Email + Password Login -->
+        <div data-auth-panel="login">
+          <form id="form-login" class="form-stack">
+            <div>
+              <label class="label" for="login-email">Email</label>
+              <input id="login-email" class="input" type="email" required placeholder="you@example.com" />
+            </div>
+            <div>
+              <label class="label" for="login-password">Password</label>
+              <input id="login-password" class="input" type="password" required placeholder="••••••••" />
+            </div>
+            <button type="submit" class="btn">Sign In</button>
+          </form>
+          <div style="margin-top: 10px; text-align: right;">
+            <button type="button" id="btn-forgot-link" class="btn btn-ghost btn-sm">Forgot password? Recover via email</button>
+          </div>
+        </div>
+
+        <!-- Register -->
+        <div data-auth-panel="register" class="hidden">
+          <form id="form-register" class="form-stack">
+            <div>
+              <label class="label" for="reg-name">First name or nickname</label>
+              <input id="reg-name" class="input" type="text" placeholder="e.g. Maya" />
+            </div>
+            <div>
+              <label class="label" for="reg-email">Email</label>
+              <input id="reg-email" class="input" type="email" required placeholder="you@example.com" />
+            </div>
+            <div>
+              <label class="label" for="reg-password">Password (8+ chars)</label>
+              <input id="reg-password" class="input" type="password" minlength="8" required placeholder="Create a password" />
+            </div>
+            <button type="submit" class="btn">Create Sanctuary &amp; Verify Email</button>
+          </form>
+        </div>
+
+        <!-- Verify Email Ownership -->
+        <div data-auth-panel="verify" class="hidden">
+          <form id="form-verify-email" class="form-stack">
+            <p style="font-size:13px; color:var(--text-muted);">
+              We sent a 6-digit verification code and confirmation link to <strong id="verify-email-label">your email</strong>.
+            </p>
+            <div>
+              <label class="label" for="verify-code">6-digit verification code</label>
+              <input id="verify-code" class="input" type="text" inputmode="numeric" maxlength="8" required placeholder="123456" />
+            </div>
+            <button type="submit" class="btn">Verify Email &amp; Enter</button>
+            <div style="display:flex; justify-content:space-between; gap:8px;">
+              <button type="button" id="btn-resend-verify" class="btn btn-ghost btn-sm">Resend code</button>
+              <button type="button" id="btn-back-to-login" class="btn btn-ghost btn-sm">Back to sign in</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Email Magic Code (OTP) -->
+        <div data-auth-panel="otp" class="hidden">
+          <form id="form-otp" class="form-stack">
+            <div>
+              <label class="label" for="otp-email">Email for 6-digit code</label>
+              <input id="otp-email" class="input" type="email" required placeholder="you@example.com" />
+            </div>
+            <button type="button" id="btn-send-otp" class="btn btn-soft">Send Sign-In Code</button>
+            <div id="otp-verify-group" class="form-stack hidden">
+              <div>
+                <label class="label" for="otp-code">6-digit code</label>
+                <input id="otp-code" class="input" type="text" maxlength="8" placeholder="123456" />
+              </div>
+              <button type="submit" class="btn">Verify &amp; Enter</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Quick PIN -->
+        <div data-auth-panel="pin" class="hidden">
+          <form id="form-pin-login" class="form-stack">
+            <div>
+              <label class="label" for="pin-email">Account email</label>
+              <input id="pin-email" class="input" type="email" required placeholder="you@example.com" />
+            </div>
+            <div>
+              <label class="label" for="pin-code">Quick PIN (set inside Profile)</label>
+              <input id="pin-code" class="input" type="password" inputmode="numeric" minlength="4" maxlength="8" required placeholder="••••" />
+            </div>
+            <button type="submit" class="btn">Unlock with PIN</button>
+          </form>
+        </div>
+
+        <!-- Forgot Password Request -->
+        <div data-auth-panel="forgot" class="hidden">
+          <form id="form-forgot" class="form-stack">
+            <p style="font-size:13px; color:var(--text-muted);">
+              Enter your account email and we will send a recovery link and reset token.
+            </p>
+            <div>
+              <label class="label" for="forgot-email">Account email</label>
+              <input id="forgot-email" class="input" type="email" required placeholder="you@example.com" />
+            </div>
+            <button type="submit" class="btn">Send Recovery Email</button>
+          </form>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div data-auth-panel="reset" class="hidden">
+          <form id="form-reset" class="form-stack">
+            <div>
+              <label class="label" for="reset-token">Recovery token</label>
+              <input id="reset-token" class="input" type="text" required placeholder="Paste reset token" />
+            </div>
+            <div>
+              <label class="label" for="reset-new-password">New password (8+ chars)</label>
+              <input id="reset-new-password" class="input" type="password" minlength="8" required placeholder="New password" />
+            </div>
+            <button type="submit" class="btn">Update Password &amp; Sign In</button>
+          </form>
+        </div>
+
+        <div id="mail-config-notice" class="outbox-drawer hidden" style="margin-top:12px;">
+          <strong>Email delivery not connected yet</strong>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+            To verify real email addresses and send recovery emails, add <code>RESEND_API_KEY</code> (or <code>SMTP_HOST</code>) in Railway Variables. You can explore everything immediately using Guest Demo below.
+          </p>
+        </div>
+
+        <div class="divider-row">or explore right away</div>
+        <button type="button" id="btn-guest-login" class="btn btn-outline" style="width:100%;">
+          Continue as Guest (Demo with 14-day history)
+        </button>
+
+        <!-- Transparent Local Dev Mail Outbox -->
+        <div id="dev-outbox-panel" class="outbox-drawer hidden">
+          <div style="font-weight:600; margin-bottom:4px;">Local Mail Outbox (Dev Mode)</div>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+            SMTP is not configured in <code>.env</code>, so login codes &amp; password recovery emails appear here for immediate testing.
+          </p>
+          <div id="dev-outbox-list"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- MAIN APPLICATION SHELL -->
+  <div id="app-view" class="app-shell hidden">
+    <header class="topbar">
+      <div class="brand-mark" style="font-size:22px;">
+        <span class="brand-dot"></span>
+        <span>Serene</span>
+      </div>
+
+      <nav class="nav-pills" aria-label="Primary navigation">
+        <button type="button" class="nav-pill active" data-nav="checkin">Check-in</button>
+        <button type="button" class="nav-pill" data-nav="care">Care &amp; Audio</button>
+        <button type="button" class="nav-pill" data-nav="journal">Daily Journal</button>
+        <button type="button" class="nav-pill" data-nav="dashboard">Wellness Tracker</button>
+        <button type="button" class="nav-pill" data-nav="archive">Archive</button>
+      </nav>
+
+      <div class="topbar-actions">
+        <button type="button" id="btn-theme-toggle" class="btn btn-ghost btn-sm">Evening Mode</button>
+        <button type="button" id="btn-open-profile" class="avatar-pill">
+          <span id="topbar-avatar" class="avatar-circle tint-sage">S</span>
+          <span id="topbar-user-name" style="font-size:13px; font-weight:500;">Profile</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 8 PM Unwritten Journal Reminder Banner -->
+    <div id="evening-reminder-banner" class="reminder-banner hidden">
+      <div>
+        <strong>Evening Check-in (8:00 PM)</strong>
+        <span style="font-size:14px; color:var(--text-muted); margin-left:6px;">
+          You haven't written in today's journal yet — take two quiet minutes before midnight resets the page.
+        </span>
+      </div>
+      <button type="button" id="btn-banner-write" class="btn btn-sm">Open Today's Journal</button>
+    </div>
+
+    <!-- VIEW 1: FACE SCAN & MOOD CHECK-IN -->
+    <section data-view="checkin">
+      <div class="view-header">
+        <div>
+          <h2 id="checkin-greeting">Good afternoon.</h2>
+          <p class="view-subtitle">Let your camera sense your expression locally, or choose how you feel right now.</p>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" id="btn-toggle-camera" class="btn">Start Face Scan</button>
+          <button type="button" id="btn-guided-scan" class="btn btn-soft">Guided 8s Scan</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div id="camera-frame" class="camera-frame mood-calm">
+            <video id="webcam-video" autoplay muted playsinline></video>
+            <canvas id="webcam-overlay"></canvas>
+            <div id="camera-placeholder" class="camera-placeholder">
+              <div class="brand-dot" style="width:22px; height:22px;"></div>
+              <p style="font-weight:500;">Camera is resting</p>
+              <p style="font-size:13px; max-width:300px;">
+                Press <strong>Start Face Scan</strong> to detect real-time mood locally in your browser, or tap a mood chip below.
+              </p>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap;">
+            <span id="camera-status" style="font-size:13px; color:var(--text-muted);">
+              Processed 100% locally — video frames never leave your device.
+            </span>
+            <label style="font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="toggle-landmarks" checked /> Show face dots
+            </label>
+          </div>
+
+          <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--border-soft);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="label" style="margin:0;">Or tap how you feel manually</span>
+              <button type="button" id="btn-save-current-scan" class="btn btn-sm">Save Check-in to Today</button>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="chip" data-manual-mood="happy" data-mood-score="88">Happy</button>
+              <button type="button" class="chip active" data-manual-mood="calm" data-mood-score="78">Calm</button>
+              <button type="button" class="chip" data-manual-mood="sad" data-mood-score="38">Sad</button>
+              <button type="button" class="chip" data-manual-mood="anxious" data-mood-score="42">Anxious</button>
+              <button type="button" class="chip" data-manual-mood="stressed" data-mood-score="44">Stressed</button>
+              <button type="button" class="chip" data-manual-mood="tired" data-mood-score="52">Tired</button>
+              <button type="button" class="chip" data-manual-mood="surprised" data-mood-score="68">Alert</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:18px;">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="badge badge-sage">Live Wellness Feedback</span>
+              <span class="serif" id="live-wellness-score" style="font-size:28px;">76/100</span>
+            </div>
+            <h3 id="detected-mood-label" class="serif" style="font-size:32px; margin-top:8px;">Calm &amp; Grounded</h3>
+            <p id="detected-mood-reflection" style="color:var(--text-muted); margin-top:6px; font-size:14px;"></p>
+
+            <div id="expr-bars" class="expr-bars"></div>
+
+            <div style="margin-top:16px;">
+              <span class="label">Gentle suggestions for right now</span>
+              <div id="detected-mood-suggestions" class="suggestion-list"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="serif" style="font-size:24px; margin-bottom:8px;">Today's Recorded Check-ins</h3>
+            <div id="today-scans-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: CARE, BREATHING, AMBIENT SOUNDSCAPES & PLAYLISTS -->
+    <section data-view="care" class="hidden">
+      <div class="view-header">
+        <div>
+          <h2>Care, Breathing &amp; Soundscapes</h2>
+          <p class="view-subtitle">Activities and playlists gently tuned to your current emotional state.</p>
+        </div>
+        <span id="care-mood-badge" class="badge badge-sage">Curated for: Calm</span>
+      </div>
+
+      <div class="grid-2" style="margin-bottom: 22px;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <h3 class="serif" style="font-size:26px;">Guided Breathing</h3>
+            <select id="breath-preset-select" class="select" style="width:auto;">
+              <option value="478">4-7-8 Calm Reset</option>
+              <option value="box">Box Breathing (4-4-4-4)</option>
+              <option value="coherent">Coherent 5-5</option>
+              <option value="sigh">Physiological Sigh</option>
+            </select>
+          </div>
+          <div class="breath-stage">
+            <div id="breath-orb" class="breath-orb">Ready</div>
+            <p id="breath-instruction" style="font-size:14px; color:var(--text-muted); text-align:center;">
+              Press Begin when you want a gentle breathing rhythm.
+            </p>
+            <button type="button" id="btn-breath-toggle" class="btn">Begin Breathing</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="serif" style="font-size:26px; margin-bottom:12px;">Recommended Micro-Activities</h3>
+          <div id="care-activities-list" style="display:grid; gap:12px;"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:22px;">
+        <h3 class="serif" style="font-size:26px; margin-bottom:6px;">Built-in Ambient Sound Mixer</h3>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
+          Synthesized locally in real time — blend rain, breeze, pink noise, or a 432Hz singing bowl.
+        </p>
+        <div class="sound-mixer">
+          <div class="sound-tile">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>Soft Rain</strong>
+              <button type="button" class="btn btn-soft btn-sm" data-sound-toggle="rain">Play</button>
+            </div>
+            <input type="range" min="5" max="100" value="40" data-sound-vol="rain" />
+          </div>
+          <div class="sound-tile">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>Warm Breeze</strong>
+              <button type="button" class="btn btn-soft btn-sm" data-sound-toggle="breeze">Play</button>
+            </div>
+            <input type="range" min="5" max="100" value="35" data-sound-vol="breeze" />
+          </div>
+          <div class="sound-tile">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>Warm Pink Noise</strong>
+              <button type="button" class="btn btn-soft btn-sm" data-sound-toggle="pink">Play</button>
+            </div>
+            <input type="range" min="5" max="100" value="35" data-sound-vol="pink" />
+          </div>
+          <div class="sound-tile">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>432Hz Singing Bowl</strong>
+              <button type="button" class="btn btn-soft btn-sm" data-sound-toggle="bowl">Play</button>
+            </div>
+            <input type="range" min="5" max="100" value="30" data-sound-vol="bowl" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="serif" style="font-size:26px; margin-bottom:14px;">Mood-Matched Playlists</h3>
+        <div id="care-playlists-grid" class="playlist-grid"></div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: DAILY DIGITAL JOURNAL -->
+    <section data-view="journal" class="hidden">
+      <div class="view-header">
+        <div>
+          <h2>Today's Journal</h2>
+          <p class="view-subtitle">
+            <span id="journal-today-label">Today</span> · Canvas resets cleanly every midnight (past days stay safe in Archive).
+          </p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span id="journal-status-badge" class="badge badge-sage">Open canvas</span>
+          <button type="button" id="btn-preview-8pm" class="btn btn-outline btn-sm">Preview 8 PM Reminder</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="display:grid; gap:14px;">
+          <div class="prompt-banner">
+            <div>
+              <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft);">Gentle Prompt</span>
+              <p id="journal-prompt-text" style="font-size:14px; font-weight:500;">What felt surprisingly light or comforting today?</p>
+            </div>
+            <button type="button" id="btn-rotate-prompt" class="btn btn-ghost btn-sm">Another</button>
+          </div>
+
+          <div>
+            <span class="label">How does this moment feel?</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="chip active" data-journal-mood="calm">Calm</button>
+              <button type="button" class="chip" data-journal-mood="happy">Happy</button>
+              <button type="button" class="chip" data-journal-mood="sad">Sad</button>
+              <button type="button" class="chip" data-journal-mood="anxious">Anxious</button>
+              <button type="button" class="chip" data-journal-mood="stressed">Stressed</button>
+              <button type="button" class="chip" data-journal-mood="tired">Tired</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="label" for="journal-content">Write freely (anytime during the day)</label>
+            <textarea id="journal-content" class="textarea" placeholder="Pour out a quiet thought, highlight, or worry..."></textarea>
+          </div>
+
+          <div>
+            <label class="label" for="journal-gratitude">One small thing you're grateful for (optional)</label>
+            <input id="journal-gratitude" class="input" type="text" placeholder="Warm sunlight, a kind text, finishing a task..." />
+          </div>
+
+          <div class="media-toolbar">
+            <label class="btn btn-soft btn-sm" style="cursor:pointer;">
+              Add Photos
+              <input id="journal-photo-input" type="file" accept="image/*" multiple class="hidden" />
+            </label>
+            <button type="button" id="btn-record-voice" class="btn btn-soft btn-sm">Record Voice</button>
+            <button type="button" id="btn-discard-voice" class="btn btn-ghost btn-sm hidden">Discard Voice</button>
+          </div>
+
+          <div id="journal-photo-previews" class="photo-preview-grid"></div>
+
+          <div id="voice-recorder-box" class="voice-recorder-box hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span id="voice-timer" style="font-size:13px; font-weight:500;">Recording 00:00</span>
+              <span style="font-size:12px; color:var(--text-muted);">Microphone audio</span>
+            </div>
+            <canvas id="voice-waveform" class="waveform-canvas" width="420" height="44"></canvas>
+            <audio id="voice-preview-player" controls class="hidden" style="width:100%; height:36px;"></audio>
+          </div>
+
+          <button type="button" id="btn-save-journal" class="btn">Save Reflection to Today</button>
+        </div>
+
+        <div style="display:grid; gap:14px;">
+          <h3 class="serif" style="font-size:26px;">Today's Moments</h3>
+          <div id="journal-entries-list" style="display:grid; gap:14px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: WELLNESS TRACKER DASHBOARD -->
+    <section data-view="dashboard" class="hidden">
+      <div class="view-header">
+        <div>
+          <h2>Wellness Tracker</h2>
+          <p class="view-subtitle">Observe how your emotional wellbeing, moods, and reflections evolve over time.</p>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="chip" data-range-days="7">7D</button>
+          <button type="button" class="chip active" data-range-days="14">14D</button>
+          <button type="button" class="chip" data-range-days="30">30D</button>
+          <button type="button" class="chip" data-range-days="90">90D</button>
+          <input type="date" id="dash-start" class="input" style="width:auto; padding:6px 10px; font-size:13px;" />
+          <input type="date" id="dash-end" class="input" style="width:auto; padding:6px 10px; font-size:13px;" />
+          <button type="button" id="btn-apply-custom-range" class="btn btn-soft btn-sm">Apply</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="card kpi-card">
+          <div class="kpi-label">Avg Wellness Score</div>
+          <div id="kpi-avg-score" class="kpi-value">—</div>
+          <div id="kpi-avg-delta" class="kpi-sub">Baseline</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">Dominant Mood</div>
+          <div id="kpi-dominant-mood" class="kpi-value">—</div>
+          <div class="kpi-sub">Across selected period</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">Active Streak</div>
+          <div id="kpi-streak" class="kpi-value">0d</div>
+          <div class="kpi-sub">Check-ins &amp; journaling</div>
+        </div>
+        <div class="card kpi-card">
+          <div class="kpi-label">Reflections</div>
+          <div id="kpi-totals" class="kpi-value" style="font-size:24px; padding-top:8px;">0 scans</div>
+          <div class="kpi-sub">Recorded in range</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:22px;">
+        <div class="card">
+          <h3 class="serif" style="font-size:24px; margin-bottom:12px;">Mental Wellness Trajectory</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-wellness-trend"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="serif" style="font-size:24px; margin-bottom:12px;">Emotional Spectrum</h3>
+          <div class="chart-wrap">
+            <canvas id="chart-mood-dist"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-equal" style="margin-bottom:22px;">
+        <div class="card">
+          <h3 class="serif" style="font-size:24px; margin-bottom:12px;">Time-of-Day Rhythm</h3>
+          <div class="chart-wrap" style="height:220px;">
+            <canvas id="chart-tod-rhythm"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="serif" style="font-size:24px; margin-bottom:10px;">Personal Pattern Insights</h3>
+          <div id="dashboard-insights-list" class="suggestion-list"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 class="serif" style="font-size:24px;">90-Day Wellness Mosaic</h3>
+            <p style="font-size:13px; color:var(--text-muted);">Click any tile to revisit that day's journal. Clay dot marks journaled days.</p>
+          </div>
+        </div>
+        <div id="wellness-heatmap" class="heatmap-grid"></div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: PAST REFLECTIONS ARCHIVE -->
+    <section data-view="archive" class="hidden">
+      <div class="view-header">
+        <div>
+          <h2>Past Reflections Archive</h2>
+          <p class="view-subtitle">Your daily journal resets at midnight, while every past reflection stays safely preserved here.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:20px;">
+        <span class="label">Select a day</span>
+        <div id="archive-days-list" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      </div>
+      <div id="archive-day-entries" style="display:grid; gap:14px;"></div>
+    </section>
+
+    <footer class="footer-note">
+      <span>Serene is a gentle self-reflection tool, not a replacement for professional clinical care.</span>
+      <button type="button" id="btn-open-support" class="btn btn-ghost btn-sm">Need immediate support?</button>
+    </footer>
+  </div>
+
+  <!-- GENTLE SKIPPABLE ONBOARDING MODAL -->
+  <div id="onboarding-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="badge badge-sage">15-second setup</span>
+        <button type="button" id="btn-onboard-skip" class="btn btn-ghost btn-sm">Skip for now</button>
+      </div>
+      <h2 class="serif" style="font-size:32px; margin-top:10px;">Make this space yours</h2>
+      <p style="font-size:14px; color:var(--text-muted); margin-top:4px;">Only share what feels effortless — everything here is optional.</p>
+
+      <div class="form-stack" style="margin-top:18px;">
+        <div>
+          <label class="label" for="onboard-name">What should we call you?</label>
+          <input id="onboard-name" class="input" type="text" />
+        </div>
+        <div>
+          <span class="label">Pick a calm tint</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="chip active" data-onboard-tint="sage">Sage</button>
+            <button type="button" class="chip" data-onboard-tint="clay">Clay</button>
+            <button type="button" class="chip" data-onboard-tint="mist">Mist</button>
+            <button type="button" class="chip" data-onboard-tint="lavender">Lavender</button>
+            <button type="button" class="chip" data-onboard-tint="sand">Sand</button>
+          </div>
+        </div>
+        <div>
+          <span class="label">What brings you here? (tap any)</span>
+          <div id="onboard-goals" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+        </div>
+        <div>
+          <label class="label" for="onboard-tone">How should feedback sound?</label>
+          <select id="onboard-tone" class="select">
+            <option value="gentle">Gentle &amp; soothing</option>
+            <option value="clear">Practical &amp; concise</option>
+          </select>
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+          <input type="checkbox" id="onboard-reminder" checked />
+          Remind me gently at 8:00 PM if I haven't journaled yet
+        </label>
+        <button type="button" id="btn-onboard-save" class="btn">Enter Serene</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE & SETTINGS MODAL -->
+  <div id="profile-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2 class="serif" style="font-size:30px;">Your Profile</h2>
+        <button type="button" id="btn-close-profile" class="btn btn-ghost btn-sm">Close</button>
+      </div>
+      <form id="form-profile" class="form-stack">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <label class="btn btn-soft btn-sm" style="cursor:pointer;">
+            Upload Photo
+            <input id="profile-avatar-file" type="file" accept="image/*" class="hidden" />
+          </label>
+          <span style="font-size:12px; color:var(--text-muted);">Optional avatar image</span>
+        </div>
+        <div>
+          <label class="label" for="profile-name">Display name</label>
+          <input id="profile-name" class="input" type="text" />
+        </div>
+        <div class="grid-equal" style="gap:12px;">
+          <div>
+            <label class="label" for="profile-pronouns">Pronouns (optional)</label>
+            <input id="profile-pronouns" class="input" type="text" placeholder="e.g. they/them" />
+          </div>
+          <div>
+            <label class="label" for="profile-age">Age range (optional)</label>
+            <select id="profile-age" class="select">
+              <option value="">Prefer not to say</option>
+              <option value="18-24">18–24</option>
+              <option value="25-34">25–34</option>
+              <option value="35-44">35–44</option>
+              <option value="45+">45+</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="label" for="profile-intention">Personal intention</label>
+          <input id="profile-intention" class="input" type="text" placeholder="e.g. Protect quiet evenings" />
+        </div>
+        <div class="grid-equal" style="gap:12px;">
+          <div>
+            <label class="label" for="profile-tone">Feedback style</label>
+            <select id="profile-tone" class="select">
+              <option value="gentle">Gentle &amp; soothing</option>
+              <option value="clear">Practical &amp; concise</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="profile-reminder-time">Evening reminder time</label>
+            <input id="profile-reminder-time" class="input" type="time" value="20:00" />
+          </div>
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer;">
+          <input type="checkbox" id="profile-reminder-enabled" checked />
+          Notify at 8:00 PM when today's journal is empty
+        </label>
+        <div>
+          <label class="label" for="profile-pin">Set Quick PIN (4–8 digits, optional)</label>
+          <input id="profile-pin" class="input" type="password" inputmode="numeric" placeholder="Leave blank to keep unchanged" />
+        </div>
+        <button type="submit" class="btn">Save Profile</button>
+      </form>
+
+      <div class="divider-row">data &amp; session</div>
+      <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <button type="button" id="btn-export-data" class="btn btn-outline btn-sm">Export My Data (JSON)</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" id="btn-delete-account" class="btn btn-ghost btn-sm" style="color:var(--clay);">Delete Account</button>
+          <button type="button" id="btn-logout" class="btn btn-soft btn-sm">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRISIS SUPPORT MODAL -->
+  <div id="support-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 class="serif" style="font-size:28px;">Immediate Support</h2>
+        <button type="button" id="btn-close-support" class="btn btn-ghost btn-sm">Close</button>
+      </div>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:14px;">
+        If you are feeling overwhelmed, unsafe, or in crisis, please reach out to real human support right away:
+      </p>
+      <div class="suggestion-list">
+        <div class="suggestion-item"><strong>US &amp; Canada:</strong><span>Call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline, 24/7 free &amp; confidential)</span></div>
+        <div class="suggestion-item"><strong>India:</strong><span>Tele-MANAS <strong>14416</strong> or Kiran <strong>1800-599-0019</strong></span></div>
+        <div class="suggestion-item"><strong>UK:</strong><span>Call <strong>111</strong> (NHS mental health) or <strong>116 123</strong> (Samaritans)</span></div>
+        <div class="suggestion-item"><strong>Worldwide:</strong><span><a href="https://findahelpline.com/" target="_blank" rel="noopener noreferrer">findahelpline.com</a></span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
